@@ -21,5 +21,5 @@ Write an [Item-based Collaborative Filtering Recommendation Algorithm][algo]
           guesses << repo unless user.repositories.include?(repo)
         end
       end
-      user.guesses = guesses[1..10]
+      user.guesses = guesses[0,10]
     end
