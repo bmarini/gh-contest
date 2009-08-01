@@ -121,13 +121,72 @@ task :load_test_users => ["data/test.txt"] do
   end
 end
 
+file "user-neighbors.txt" => [:load_users_repos] do
+  File.open("user-neighbors.txt", "w") do |f|
+    @user_repos.each do |user, repos|
+      neighbors = {}
+      repos.each do |repo|
+        @repo_users[repo].each do |u|
+          neighbors[u] ||= 0
+          neighbors[u] += 1
+        end
+      end
+      
+      # Sort by most common
+      neighbors = neighbors.sort {|a,b| a[1] <=> b[1] }.reverse[0,30]
+      neighbors = neighbors.map {|a| a[0] }
+
+      f.puts "#{user}:#{neighbors.join(',')}"
+    end
+  end
+end
+
+task :load_user_neighbors => ["user-neighbors.txt"] do
+  @user_neighbors = {}
+  File.open("user-neighbors.txt") do |f|
+    f.each_line do |l|
+      user, neighbors = l.strip.split(":")
+      user = user.to_i
+      neighbors = neighbors.split(',').map {|n| n.to_i} 
+      @user_neighbors[user] = neighbors
+    end
+  end
+end
+
+# ---------------------------------------------------------------------------
+# Algorithms
+# ---------------------------------------------------------------------------
+
 desc <<-EOF
 Algo1 (codename neighbors)
 Find the users with most watched repositories in common. Recommend repositories
 that the user's most similar neighbors are watching, that are also watched by
-the most people.
+the most other neighbors.
 EOF
-task :algo1 => [:load_users_repos] do
+task :algo1 => [:load_users_repos, :load_user_neighbors, :load_test_users] do
+  File.open("results.txt", "w") do |f|
+    @test_users.each do |test_user|
+      next if @user_neighbors[test_user].nil?
+    
+      common_repos = {}
+      @user_neighbors[test_user].each do |neighbor|
+        next if test_user == neighbor
+        
+        unless @user_repos[neighbor].nil?
+          @user_repos[neighbor].each do |r|
+            common_repos[r] ||= 0
+            common_repos[r] += 1
+          end
+        else
+          puts "#{neighbor} has no repos?"
+        end
+      end
+    
+      common_repos = common_repos.sort {|a,b| a[1] <=> b[1] }.map {|a| a[0] }
+      common_repos = common_repos.reject {|r| @user_repos[test_user].include?(r)}
+      f.puts "#{test_user}:#{common_repos[0,10].join(',')}"
+    end
+  end
 end
 
 desc <<-EOF
