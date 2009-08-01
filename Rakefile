@@ -121,7 +121,22 @@ task :load_test_users => ["data/test.txt"] do
   end
 end
 
-file "results.txt" => [:load_user_lang, :load_lang_repos, :load_users_repos, :load_test_users] do
+desc <<-EOF
+Algo1 (codename neighbors)
+Find the users with most watched repositories in common. Recommend repositories
+that the user's most similar neighbors are watching, that are also watched by
+the most people.
+EOF
+task :algo1 => [:load_users_repos] do
+end
+
+desc <<-EOF
+Algo 2 (codename popular)
+Categorize each repository by language. Compute percentage of languages user
+watches. Recommend most popular repositories of the most watched language of
+the user.
+EOF
+task :algo2 => [:load_user_lang, :load_lang_repos, :load_users_repos, :load_test_users] do
   File.open("results.txt", "w") do |f|
     @test_users.each do |test_user|
       lang = @user_lang[test_user]
@@ -133,8 +148,6 @@ file "results.txt" => [:load_user_lang, :load_lang_repos, :load_users_repos, :lo
         end
 
         f.puts "#{test_user}:#{guesses[0,10].join(',')}"
-      else
-        puts "Skipping #{test_user}"
       end
     end
   end
