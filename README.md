@@ -4,7 +4,11 @@
 
 Write an [Item-based Collaborative Filtering Recommendation Algorithm][algo]
 
-# Algorithm 1
+# Algorithm 1 "neighbor"
+
+Find the users with most watched repositories in common. Recommend repositories
+that the user's most similar neighbors are watching, that are also watched by
+the most people.
 
     @all_users.each do |user|
       user.repositories.each do |repo|
@@ -23,3 +27,9 @@ Write an [Item-based Collaborative Filtering Recommendation Algorithm][algo]
       end
       user.guesses = guesses[0,10]
     end
+
+# Algorithm 2 "popular"
+
+Categorize each repository by language. Compute percentage of languages user
+watches. Recommend most popular repositories of the most watched language of
+the user.
