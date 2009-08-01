@@ -133,7 +133,7 @@ file "user-neighbors.txt" => [:load_users_repos] do
       end
       
       # Sort by most common
-      neighbors = neighbors.sort {|a,b| a[1] <=> b[1] }.reverse[0,30]
+      neighbors = neighbors.sort {|a,b| a[1] <=> b[1] }.reverse[0,60]
       neighbors = neighbors.map {|a| a[0] }
 
       f.puts "#{user}:#{neighbors.join(',')}"
