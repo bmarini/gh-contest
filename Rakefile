@@ -133,7 +133,7 @@ file "user-neighbors.txt" => [:load_users_repos] do
       end
       
       # Sort by most common
-      neighbors = neighbors.sort {|a,b| a[1] <=> b[1] }.reverse[0,60]
+      neighbors = neighbors.sort {|a,b| a[1] <=> b[1] }.reverse[0,30]
       neighbors = neighbors.map {|a| a[0] }
 
       f.puts "#{user}:#{neighbors.join(',')}"
@@ -172,17 +172,14 @@ task :algo1 => [:load_users_repos, :load_user_neighbors, :load_test_users] do
       @user_neighbors[test_user].each do |neighbor|
         next if test_user == neighbor
         
-        unless @user_repos[neighbor].nil?
-          @user_repos[neighbor].each do |r|
-            common_repos[r] ||= 0
-            common_repos[r] += 1
-          end
-        else
-          puts "#{neighbor} has no repos?"
+        @user_repos[neighbor].each do |r|
+          common_repos[r] ||= 0
+          common_repos[r] += 1
         end
       end
     
-      common_repos = common_repos.sort {|a,b| a[1] <=> b[1] }.map {|a| a[0] }
+      common_repos = common_repos.sort {|a,b| a[1] <=> b[1] }.reverse
+      common_repos.map! {|a| a[0] }
       common_repos = common_repos.reject {|r| @user_repos[test_user].include?(r)}
       f.puts "#{test_user}:#{common_repos[0,10].join(',')}"
     end
